@@ -17,24 +17,25 @@ public class Rainha extends Peca {
                 int direcao = (colunaDestino > colunaAtual) ? 1 : -1;
                 for (int i = colunaAtual + direcao; i != colunaDestino; i += direcao) {
                     if (tabuleiro.getPeca(linhaAtual, i) != null) {
-                        return false;
+                        return false; // Caminho bloqueado
                     }
                 }
             } else { // movimento vertical
                 int direcao = (linhaDestino > linhaAtual) ? 1 : -1;
                 for (int i = linhaAtual + direcao; i != linhaDestino; i += direcao) {
                     if (tabuleiro.getPeca(i, colunaAtual) != null) {
-                        return false;
+                        return false; // Caminho bloqueado
                     }
                 }
             }
+            // Verifica a casa de destino
             Peca pecaDestinno = tabuleiro.getPeca(linhaDestino, colunaDestino);
             if (pecaDestinno == null || !pecaDestinno.getCor().equals(this.getCor())) {
-                return false;
+                return true; // Movimento válido
             }
         }
 
-        // 2. Lógica do movimento do Bispo (diagonal)
+        // 2. Verifica se é um movimento de Bispo (diagonal)
         if (Math.abs(linhaAtual - linhaDestino) == Math.abs(colunaAtual - colunaDestino)) {
             // Verifica se o caminho está livre
             int linhaDirecao = (linhaDestino > linhaAtual) ? 1 : -1;
@@ -45,17 +46,20 @@ public class Rainha extends Peca {
 
             while (i != linhaDestino && j != colunaDestino) {
                 if (tabuleiro.getPeca(i, j) != null) {
-                    return false;
+                    return false; // Caminho bloqueado
                 }
                 i += linhaDirecao;
                 j += colunaDirecao;
             }
 
+            // Verifica a casa de destino
             Peca pecaDestino = tabuleiro.getPeca(linhaDestino, colunaDestino);
             if (pecaDestino == null || !pecaDestino.getCor().equals(this.getCor())) {
-                return false;
+                return true; // Movimento válido
             }
         }
+
+        // Se nenhuma das condições acima for atendida, o movimento é inválido
         return false;
     }
 }
