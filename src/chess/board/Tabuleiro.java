@@ -8,13 +8,26 @@ import chess.pieces.Cavalo;
 import chess.pieces.Rainha;
 import chess.pieces.Rei;
 
-public class Tabuleiro {
-    private Peca[][] pecas;
-    private boolean jogoAcabou = false; // Adicione esta linha
+import java.util.ArrayList;
+import java.util.List;
 
+public class Tabuleiro {
+    // A matriz 8x8 que armazena as peças do tabuleiro
+    private Peca[][] pecas;
+    // Variável que controla se o jogo terminou
+    private boolean jogoAcabou = false;
+
+    /**
+     * Construtor da classe Tabuleiro.
+     * Inicializa a matriz de peças.
+     */
     public Tabuleiro() {
         this.pecas = new Peca[8][8];
     }
+
+    /**
+     * Posiciona todas as peças do xadrez nas suas posições iniciais.
+     */
 
     public void inicializarTabuleiro() {
         // ADICIONANDO PEOES
@@ -54,17 +67,29 @@ public class Tabuleiro {
         //
     }
 
-    // chess.board.Tabuleiro.java
+    /**
+     * Imprime o tabuleiro no console, com cores e formatação.
+     * Destaca as casas para onde o rei não pode se mover se estiver em xeque.
+     *
+     * @param corJogadorAtual A cor do jogador na rodada atual.
+     */
 
-// ...
-
-    public void imprimirTabuleiro() {
+    public void imprimirTabuleiro(String corJogadorAtual) {
         // Códigos de escape ANSI para cores de fundo e texto
         final String ANSI_RESET = "\u001B[0m";
         final String ANSI_TEXT_BLACK = "\u001B[30m";
         final String ANSI_TEXT_WHITE = "\u001B[37m";
         final String ANSI_BG_BLACK = "\u001B[40m";
         final String ANSI_BG_WHITE = "\u001B[47m";
+        final String ANSI_BG_RED = "\u001B[41m"; // Fundo Vermelho
+
+        boolean reiEmXeque = isReiEmXeque(corJogadorAtual);
+
+        // Se o rei estiver em xeque, encontra os movimentos ilegais para destaque
+        List<int[]> movimentosIlegaisRei = new ArrayList<>();
+        if (reiEmXeque) {
+            movimentosIlegaisRei = getMovimentosIlegaisRei(corJogadorAtual);
+        }
 
         System.out.println("\n     a   b   c   d   e   f   g   h");
         System.out.println("   ---------------------------------");
@@ -76,10 +101,23 @@ public class Tabuleiro {
                 String pieceSymbol = " ";
                 String pieceColor = "";
 
+                // Verifica se há uma peça na casa para imprimi-la
                 if (pecas[i][j] != null) {
                     pieceSymbol = pecas[i][j].getSimbolo();
-                    // A cor do texto é baseada na cor do fundo para garantir contraste
                     pieceColor = (backgroundColor.equals(ANSI_BG_WHITE)) ? ANSI_TEXT_BLACK : ANSI_TEXT_WHITE;
+                }
+
+                // Lógica para destacar as casas ilegais para o Rei em xeque
+                boolean isMovimentoIlegal = false;
+                for (int[] coords : movimentosIlegaisRei) {
+                    if (coords[0] == i && coords[1] == j) {
+                        isMovimentoIlegal = true;
+                        break;
+                    }
+                }
+                if (isMovimentoIlegal) {
+                    backgroundColor = ANSI_BG_RED;
+                    pieceColor = ANSI_TEXT_WHITE; // Garante que o texto seja visível no fundo vermelho
                 }
 
                 System.out.print(backgroundColor + pieceColor + " " + pieceSymbol + " " + ANSI_RESET + "|");
@@ -90,32 +128,46 @@ public class Tabuleiro {
         System.out.println("     a   b   c   d   e   f   g   h\n");
     }
 
-    // metodo getPeca para comer peças
-
+    /**
+     * Retorna a peça em uma posição específica do tabuleiro.
+     *
+     * @param linha  A linha (0-7).
+     * @param coluna A coluna (0-7).
+     * @return A peça na posição ou null se estiver fora do tabuleiro.
+     */
     public Peca getPeca(int linha, int coluna) {
-    // verifica se as coordenadas são válidas.
-        if (linha < 0 || linha >= 8 || coluna < 0 || coluna >=8) {
-            return null; // fora do tabuleiro
+        if (linha < 0 || linha >= 8 || coluna < 0 || coluna >= 8) {
+            return null;
         }
         return this.pecas[linha][coluna];
     }
 
+    /**
+     * Move uma peça da posição de origem para a de destino.
+     *
+     * @param linhaOrigem   Linha inicial da peça.
+     * @param colunaOrigem  Coluna inicial da peça.
+     * @param linhaDestino  Linha final da peça.
+     * @param colunaDestino Coluna final da peça.
+     */
     public void moverPeca(int linhaOrigem, int colunaOrigem, int linhaDestino, int colunaDestino) {
-        // 1. Pega a peça da posição de origem
         Peca peca = pecas[linhaOrigem][colunaOrigem];
-
-        // 2. Coloca a peça na posição de destino
         pecas[linhaDestino][colunaDestino] = peca;
-
-        // 3. Esvazia a posição de origem
         pecas[linhaOrigem][colunaOrigem] = null;
     }
 
+    /**
+     * Encontra e retorna a posição do rei de uma determinada cor.
+     *
+     * @param corRei A cor do rei a ser encontrada.
+     * @return Um array de inteiros {linha, coluna} ou null se não for encontrado.
+     */
     public int[] encontrarRei(String corRei) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Peca peca = this.pecas[i][j];
-                if (peca != null && peca.getSimbolo().equalsIgnoreCase("K") && peca.getCor().equals(corRei)) {
+                // Verifica o símbolo do rei e a cor
+                if (peca != null && peca.getSimbolo().equalsIgnoreCase("k") && peca.getCor().equals(corRei)) {
                     return new int[]{i, j};
                 }
             }
@@ -123,66 +175,66 @@ public class Tabuleiro {
         return null;
     }
 
+    /**
+     * Verifica se o rei de uma determinada cor está em xeque.
+     *
+     * @param corRei A cor do rei a ser verificada.
+     * @return True se o rei estiver em xeque, false caso contrário.
+     */
     public boolean isReiEmXeque(String corRei) {
-        // 1. Encontra a posição do rei
         int[] posicaoRei = encontrarRei(corRei);
         if (posicaoRei == null) {
-            return false; // Ou lance uma exceção, o rei não deveria estar fora do tabuleiro
+            return false;
         }
         int linhaRei = posicaoRei[0];
         int colunaRei = posicaoRei[1];
-
-        // 2. Determina a cor do adversário
         String corAdversario = corRei.equals("branco") ? "preto" : "branco";
 
-        // 3. Percorre o tabuleiro para encontrar as peças do adversário
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Peca pecaAdversaria = this.pecas[i][j];
-
-                // 4. Se a Peça pertence ao adversário, verifica se ela pode atacar o rei
                 if (pecaAdversaria != null && pecaAdversaria.getCor().equals(corAdversario)) {
-                    // chama o movimentoValido da peça do adversário.
-                    // A posição de destino é a do rei.
                     if (pecaAdversaria.movimentoValido(this, i, j, linhaRei, colunaRei)) {
-                        System.out.println("Xeque!");
-                        return true; // Encontrou uma peça que pode atacar o rei
+                        return true;
                     }
                 }
             }
         }
-        return false; // Nenhum ataque foi encontrado, o rei não está em xeque
+        return false;
     }
 
+    /**
+     * Verifica se um jogador está em xeque-mate.
+     *
+     * @param corJogador A cor do jogador a ser verificada.
+     * @return True se for xeque-mate, false caso contrário.
+     */
     public boolean isXequeMate(String corJogador) {
-        // 1. O rei precisa estar em xeque para que seja xeque-mate.
-        // O método correto a ser chamado aqui é isReiEmXeque.
-        if (!isReiEmXeque(corJogador)){
+        if (!isReiEmXeque(corJogador)) {
             return false;
         }
 
-        // 2. Tenta encontrar um movimento que salve o rei.
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Peca pecaOrigem = this.pecas[i][j];
 
-                // Verifica se a peça é do jogador atual
                 if (pecaOrigem != null && pecaOrigem.getCor().equals(corJogador)) {
-                    // Tenta mover a peça para todas as casas do tabuleiro
                     for (int destinoLinha = 0; destinoLinha < 8; destinoLinha++) {
                         for (int destinoColuna = 0; destinoColuna < 8; destinoColuna++) {
-                            // Verifica se o movimento é válido e se a jogada salva o rei
                             if (pecaOrigem.movimentoValido(this, i, j, destinoLinha, destinoColuna)) {
+                                // Simula o movimento
+                                Peca pecaCapturada = getPeca(destinoLinha, destinoColuna);
+                                moverPeca(i, j, destinoLinha, destinoColuna);
 
-                                // Se encontrar uma jogada legal, usa o tentarMoverPeca para testar
-                                if (tentarMoverPeca(i, j, destinoLinha, destinoColuna)) {
-                                    // Se for um movimento legal, desfaz a jogada e retorna false.
-                                    // Já que tentarMoverPeca retorna true, o movimento já foi feito,
-                                    // então precisamos desfazê-lo para que o loop continue.
-                                    Peca pecaCapturada = this.pecas[destinoLinha][destinoColuna];
-                                    moverPeca(destinoLinha, destinoColuna, i, j);
-                                    this.pecas[destinoLinha][destinoColuna] = pecaCapturada;
-                                    return false; // Encontrou um movimento de escape
+                                // Verifica se o rei saiu do xeque após o movimento
+                                boolean aindaEmXeque = isReiEmXeque(corJogador);
+
+                                // Desfaz o movimento para não alterar o estado do tabuleiro
+                                moverPeca(destinoLinha, destinoColuna, i, j);
+                                pecas[destinoLinha][destinoColuna] = pecaCapturada;
+
+                                if (!aindaEmXeque) {
+                                    return false; // Encontrou um movimento que salva o rei
                                 }
                             }
                         }
@@ -190,10 +242,19 @@ public class Tabuleiro {
                 }
             }
         }
-        // Se nenhuma jogada salvou o rei, é xeque-mate
-        return true;
+        return true; // Nenhum movimento salvou o rei
     }
 
+    /**
+     * Simula um movimento e verifica se ele é legal (não deixa o próprio rei em xeque).
+     * Se for legal, o movimento é mantido. Se for ilegal, é desfeito.
+     *
+     * @param linhaOrigem   Linha inicial.
+     * @param colunaOrigem  Coluna inicial.
+     * @param linhaDestino  Linha final.
+     * @param colunaDestino Coluna final.
+     * @return True se o movimento for seguro, false caso contrário.
+     */
     public boolean tentarMoverPeca(int linhaOrigem, int colunaOrigem, int linhaDestino, int colunaDestino) {
         // Pega a peça que será movida e a peça que está no destino (se houver)
         Peca pecaMovida = pecas[linhaOrigem][colunaOrigem];
@@ -210,16 +271,68 @@ public class Tabuleiro {
             return false; // Retorna falso para indicar que a jogada é ilegal
         }
 
-        // Se não, o movimento é válido
+        // Se o movimento é seguro, o tabuleiro já está no estado final, então não é necessário reverter
         return true;
     }
 
-    // Este método irá verificar se o jogo já acabou (xeque-mate).
-    // Por enquanto, podemos retornar 'false'.
+    /**
+     * Retorna a lista de movimentos ilegais para o rei em xeque.
+     * Usado para a funcionalidade de destaque.
+     *
+     * @param corRei A cor do rei em xeque.
+     * @return Uma lista de coordenadas de movimentos ilegais.
+     */
+    private List<int[]> getMovimentosIlegaisRei(String corRei) {
+        List<int[]> movimentosIlegais = new ArrayList<>();
+        int[] posicaoRei = encontrarRei(corRei);
+
+        if (posicaoRei == null) {
+            return movimentosIlegais;
+        }
+
+        int linhaRei = posicaoRei[0];
+        int colunaRei = posicaoRei[1];
+        Peca rei = getPeca(linhaRei, colunaRei);
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i == 0 && j == 0) continue;
+
+                int destinoLinha = linhaRei + i;
+                int destinoColuna = colunaRei + j;
+
+                if (destinoLinha >= 0 && destinoLinha < 8 && destinoColuna >= 0 && destinoColuna < 8) {
+                    if (rei.movimentoValido(this, linhaRei, colunaRei, destinoLinha, destinoColuna)) {
+                        Peca pecaCapturada = getPeca(destinoLinha, destinoColuna);
+                        moverPeca(linhaRei, colunaRei, destinoLinha, destinoColuna);
+
+                        if (isReiEmXeque(corRei)) {
+                            movimentosIlegais.add(new int[]{destinoLinha, destinoColuna});
+                        }
+
+                        moverPeca(destinoLinha, destinoColuna, linhaRei, colunaRei);
+                        pecas[destinoLinha][destinoColuna] = pecaCapturada;
+                    }
+                }
+            }
+        }
+        return movimentosIlegais;
+    }
+
+    /**
+     * Verifica se o jogo já acabou.
+     *
+     * @return True se o jogo tiver sido encerrado, false caso contrário.
+     */
     public boolean jogoAcabou() {
         return this.jogoAcabou;
     }
-    // Adicione este método ao final da classe Tabuleiro
+
+    /**
+     * Define o estado do jogo (terminado ou não).
+     *
+     * @param status True para encerrar o jogo.
+     */
     public void setJogoAcabou(boolean status) {
         this.jogoAcabou = status;
     }

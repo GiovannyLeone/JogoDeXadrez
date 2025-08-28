@@ -19,7 +19,27 @@ public class JogoDeXadrez {
 
         // Loop principal do jogo.
         while (!tabuleiro.jogoAcabou()) {
-            tabuleiro.imprimirTabuleiro();
+            // Verifica o estado de xeque ANTES de pedir a jogada
+            boolean reiEstavaEmXeque = tabuleiro.isReiEmXeque(jogadorAtual);
+
+            tabuleiro.imprimirTabuleiro(jogadorAtual);
+
+            // 1. verifica se o jogador adversário foi colocado em xeque-mate.
+            if (tabuleiro.isXequeMate(jogadorAtual)) {
+                System.out.println("XEQUE-MATE! O jogador " + (jogadorAtual.equals("branco") ? "preto" : "branco") + " venceu!");
+                tabuleiro.setJogoAcabou(true);
+            }
+
+            // 2. Verifica se o jogador atual está em xeque.
+            else if (reiEstavaEmXeque) {
+                System.out.println("O rei " + jogadorAtual + " está em XEQUE!");
+            }
+
+            // Se o jogo acabou, o loop será quebrado. Se não, continua pedindo a jogada.
+            if (tabuleiro.jogoAcabou()) {
+                break;
+            }
+
             System.out.println("Vez do jogador " + jogadorAtual + ".");
             System.out.print("Digite sua jogada (ex: a2 a4): ");
             String jogada = scanner.nextLine();
@@ -55,7 +75,12 @@ public class JogoDeXadrez {
                             System.out.println("Jogada válida!");
                             jogadorAtual = (jogadorAtual.equals("branco")) ? "preto" : "branco";
                         } else {
-                            System.out.println("Movimento ilegal. Você não pode colocar seu prórpio rei em xeque.");
+                            // Mensagem de erri mais específica
+                            if (reiEstavaEmXeque) {
+                                System.out.println("Movimento ilegal. Esta jogada não tira seu rei do xeque.");
+                            } else {
+                                System.out.println("Movimento ilegal. Você não pode colocar seu próprio rei em xeque.");
+                            }
                         }
 
                     } else {
@@ -69,14 +94,7 @@ public class JogoDeXadrez {
             }
 
             // ao final de um turno válido (após o jogador ter se movido),
-            // verifica se o jogador adversário foi colocado em xeque-mate.
-            if (tabuleiro.isXequeMate(jogadorAtual.equals("branco") ? "preto" : "branco")) {
-                tabuleiro.imprimirTabuleiro();
-                System.out.println("XEQUE-MATE! O jogador " + jogadorAtual + " venceu!");
-                tabuleiro.setJogoAcabou(true); // TODO FAZER O METODO PARA ISSO
-            } else if (tabuleiro.isReiEmXeque(jogadorAtual.equals("branco") ? "preto" : "branco")) {
-                System.out.println("XEQUE!");
-            }
+
         }
         scanner.close();
         System.out.println("O jogo acabou!");
