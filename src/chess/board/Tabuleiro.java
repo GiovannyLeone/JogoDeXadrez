@@ -85,11 +85,8 @@ public class Tabuleiro {
 
         boolean reiEmXeque = isReiEmXeque(corJogadorAtual);
 
-        // Se o rei estiver em xeque, encontra os movimentos ilegais para destaque
-        List<int[]> movimentosIlegaisRei = new ArrayList<>();
-        if (reiEmXeque) {
-            movimentosIlegaisRei = getMovimentosIlegaisRei(corJogadorAtual);
-        }
+        // , encontra os movimentos ilegais do Rei para destaque
+        List<int[]> movimentosIlegaisRei = getMovimentosIlegaisRei(corJogadorAtual);
 
         System.out.println("\n     a   b   c   d   e   f   g   h");
         System.out.println("   ---------------------------------");
