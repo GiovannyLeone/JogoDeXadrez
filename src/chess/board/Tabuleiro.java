@@ -14,8 +14,13 @@ import java.util.List;
 public class Tabuleiro {
     // A matriz 8x8 que armazena as peças do tabuleiro
     private Peca[][] pecas;
+
     // Variável que controla se o jogo terminou
     private boolean jogoAcabou = false;
+
+    // Listas para armazenar as peças capturadas
+    private List<Peca> cemiterioBranco;
+    private List<Peca> cemiterioPreto;
 
     /**
      * Construtor da classe Tabuleiro.
@@ -23,6 +28,8 @@ public class Tabuleiro {
      */
     public Tabuleiro() {
         this.pecas = new Peca[8][8];
+        this.cemiterioBranco = new ArrayList<>();
+        this.cemiterioPreto = new ArrayList<>();
     }
 
     /**
@@ -85,7 +92,7 @@ public class Tabuleiro {
 
         boolean reiEmXeque = isReiEmXeque(corJogadorAtual);
 
-        // , encontra os movimentos ilegais do Rei para destaque
+        // Encontra os movimentos ilegais do Rei para destaque
         List<int[]> movimentosIlegaisRei = getMovimentosIlegaisRei(corJogadorAtual);
 
         System.out.println("\n     a   b   c   d   e   f   g   h");
@@ -268,6 +275,10 @@ public class Tabuleiro {
             return false; // Retorna falso para indicar que a jogada é ilegal
         }
 
+        // Desfaz o movimento para que o método seja apenas uma simulação
+        pecas[linhaOrigem][colunaOrigem] = pecaMovida;
+        pecas[linhaDestino][colunaDestino] = pecaCapturada;
+
         // Se o movimento é seguro, o tabuleiro já está no estado final, então não é necessário reverter
         return true;
     }
@@ -314,6 +325,31 @@ public class Tabuleiro {
             }
         }
         return movimentosIlegais;
+    }
+
+    /**
+     * Retorna a lista de peças capturadas pelo jogador branco.
+     * @return Lista de peças.
+     */
+    public List<Peca> getCemiterioBranco() {
+        return cemiterioBranco;
+    }
+
+    /**
+     * Retorna a lista de peças capturadas pelo jogador preto.
+     * @return Lista de peças.
+     */
+    public List<Peca> getCemiterioPreto() {
+        return cemiterioPreto;
+    }
+
+    // Novo método para adicionar a peça
+    public void setPecaAoCemiterio(Peca pecaCapturada, String corJogador) {
+        if (corJogador.equals("branco")) {
+            cemiterioPreto.add(pecaCapturada);
+        } else {
+            cemiterioBranco.add(pecaCapturada);
+        }
     }
 
     /**

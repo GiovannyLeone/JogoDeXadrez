@@ -19,10 +19,28 @@ public class JogoDeXadrez {
 
         // Loop principal do jogo.
         while (!tabuleiro.jogoAcabou()) {
-            // Verifica o estado de xeque ANTES de pedir a jogada
-            boolean reiEstavaEmXeque = tabuleiro.isReiEmXeque(jogadorAtual);
+
+            // Cemitérios de peças
+            System.out.println("\n");// Espaço
+
+            System.out.println("Cemitério de Peças Brancas: ");
+            for (Peca peca : tabuleiro.getCemiterioBranco()) {
+                System.out.print(peca.getSimbolo() + " ");
+            }
+            System.out.println("\n");// Espaço
 
             tabuleiro.imprimirTabuleiro(jogadorAtual);
+
+            System.out.println("\n"); // Espaço
+
+            System.out.println("Cemitério de Peças Pretas: ");
+            for (Peca peca : tabuleiro.getCemiterioPreto()) {
+                System.out.print(peca.getSimbolo() + " ");
+            }
+            System.out.println("\n");// Espaço
+
+            // Verifica o estado de xeque ANTES de pedir a jogada
+            boolean reiEstavaEmXeque = tabuleiro.isReiEmXeque(jogadorAtual);
 
             // 1. verifica se o jogador adversário foi colocado em xeque-mate.
             if (tabuleiro.isXequeMate(jogadorAtual)) {
@@ -69,13 +87,22 @@ public class JogoDeXadrez {
                 // 3. Valida a jogada
                 if (peca != null && peca.getCor().equals(jogadorAtual)) {
                     if (peca.movimentoValido(tabuleiro, linhaOrigem, colunaOrigem, linhaDestino, colunaDestino)) {
+                        // 1. CAPTURA A PEÇA DE DESTINO ANTES DE MOVER
+                        Peca pecaCapturada = tabuleiro.getPeca(linhaDestino, colunaDestino);
 
                         // Depois, tenta mover a peça, verificando se isso não causa um xeque no próprio rei
                         if (tabuleiro.tentarMoverPeca(linhaOrigem, colunaOrigem, linhaDestino, colunaDestino)) {
+                            // 2. MOVE A PEÇA DE FATO
+                            tabuleiro.moverPeca(linhaOrigem, colunaOrigem, linhaDestino, colunaDestino);
+
+                            // 3. Adiciona ao cemitério se houce captura
+                            if (pecaCapturada != null) {
+                                tabuleiro.setPecaAoCemiterio(pecaCapturada, jogadorAtual);
+                            }
                             System.out.println("Jogada válida!");
                             jogadorAtual = (jogadorAtual.equals("branco")) ? "preto" : "branco";
                         } else {
-                            // Mensagem de erri mais específica
+                            // Mensagem de erro mais específica
                             if (reiEstavaEmXeque) {
                                 System.out.println("Movimento ilegal. Esta jogada não tira seu rei do xeque.");
                             } else {
